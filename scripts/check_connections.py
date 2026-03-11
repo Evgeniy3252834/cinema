@@ -88,6 +88,7 @@ def check_redis():
         r.ping()
         # Тестовая запись/чтение
         r.set('test_key', 'test_value', ex=10)
+        value = r.get('test_key')
         print_status('Redis', True, f'Connected, test value: {value}')
     except ImportError:
         print_status('Redis', False, 'redis не установлен (pip install redis)')
@@ -104,7 +105,9 @@ def check_qdrant():
             host=os.getenv('QDRANT_HOST', 'localhost'),
             port=int(os.getenv('QDRANT_PORT', 6333)),
             api_key=os.getenv('QDRANT_API_KEY'),
-            timeout=5
+            timeout=5,
+            https=False,  # Отключаем HTTPS
+            prefer_grpc=False  # Используем HTTP
         )
         # Получаем список коллекций
         collections = client.get_collections()
