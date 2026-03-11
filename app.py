@@ -10,7 +10,6 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Подключения к БД
 def get_postgres():
     return psycopg2.connect(
         host=os.getenv('POSTGRES_HOST'),
@@ -78,7 +77,7 @@ def health():
 
 @app.route('/movies')
 def get_movies():
-    # Пробуем взять из кэша Redis
+
     r = get_redis()
     cached = r.get('all_movies')
     if cached:
@@ -87,7 +86,6 @@ def get_movies():
             'movies': json.loads(cached)
         })
     
-    # Если нет в кэше - идём в PostgreSQL
     conn = get_postgres()
     cur = conn.cursor()
     cur.execute('SELECT id, title, year, director, imdb_rating FROM movies ORDER BY id')
@@ -103,10 +101,10 @@ def get_movies():
     cur.close()
     conn.close()
     
-    # Сохраняем в кэш на 1 минуту
+
     r.setex('all_movies', 60, json.dumps(movies))
     
-    # Логируем запрос в MongoDB
+
     try:
         mongo = get_mongo()
         mongo.logs.insert_one({
@@ -183,7 +181,7 @@ def rate_movie(user_id, movie_id, rating):
         ''', (user_id, movie_id, rating))
         conn.commit()
         
-        # Инвалидируем кэш
+
         r = get_redis()
         r.delete('all_movies')
         
