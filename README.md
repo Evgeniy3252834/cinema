@@ -42,15 +42,14 @@ graph LR
     B -->|rating.changed| E[Events Service]
     B -->|user.registered| F[Auth Service]
 ```
-📊 Топики и очереди
+## 📊 Топики и очереди
 Exchange	Routing Key	Подписчики	Событие
 cinematch.movies	movie.created	recommendations, events	Новый фильм
 cinematch.movies	movie.rated	recommendations, events	Оценка фильма
 cinematch.movies	movie.viewed	events	Просмотр
 cinematch.ratings	rating.changed	movies, events	Изменение рейтинга
 cinematch.auth	user.registered	events	Новый пользователь
-🏛️ DDD (Domain-Driven Design) в каждом сервисе
-text
+## 🏛️ DDD (Domain-Driven Design) в каждом сервисе
 services/movies/
 ├── src/
 │   ├── domain/                      # Ядро предметной области
@@ -68,12 +67,10 @@ services/movies/
 │   │   └── message_bus/                # RabbitMQ адаптеры
 │   └── interfaces/                    # API слой
 │       └── http/                        # Flask routes
-🚀 Быстрый старт
-Требования
+## 🚀 Быстрый старт
+Требования:
 Python 3.9+
-
 Docker и Docker Compose
-
 Git
 
 Установка и запуск
@@ -107,7 +104,7 @@ python services/auth/app.py        # порт 5001
 python services/ratings/app.py     # порт 5003
 python services/recommendations/app.py  # порт 5004
 python services/events/app.py      # порт 5005
-📡 API Endpoints
+## 📡 API Endpoints
 Movies Service (порт 5002)
 Метод	Endpoint	Описание	Событие
 GET	/api/movies/	Все фильмы	-
@@ -117,7 +114,7 @@ GET	/api/movies/<id>/actors	Актёры фильма	-
 GET	/api/movies/actors/<name>/movies	Фильмы актёра	-
 GET	/api/movies/top-views	Топ по просмотрам	-
 Другие сервисы (будут добавлены)
-🧪 Примеры запросов
+## 🧪 Примеры запросов
 bash
 # Получить все фильмы
 curl http://localhost:5002/api/movies/
@@ -137,8 +134,7 @@ curl http://localhost:5002/api/movies/1/actors
 
 # Проверить RabbitMQ веб-интерфейс
 # http://localhost:15672 (admin/admin)
-📦 Структура проекта
-text
+## 📦 Структура проекта
 cinema/
 ├── services/                          # Микросервисы
 │   ├── movies/                         # Сервис фильмов
@@ -163,10 +159,10 @@ cinema/
 ├── .gitignore
 └── README.md
 
-📄 Лицензия
+## 📄 Лицензия
 MIT License — свободно используйте для обучения и разработки.
 
-👨‍💻 Автор
+## 👨‍💻 Авторы
 Овчинников Евгений, Михайлов Сергей — учебный проект по курсу "Архитектура ПО"
 
 ⭐ Если проект полезен, поставьте звезду на GitHub!
