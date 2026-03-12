@@ -1,24 +1,104 @@
+# 🎬 CineMatch — Рекомендательная система фильмов
 
-## 🗄️ Базы данных
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-3.0-green)](https://flask.palletsprojects.com)
+[![Docker](https://img.shields.io/badge/Docker-✓-blue)](https://docker.com)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.12-orange)](https://rabbitmq.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-| База данных | Назначение | Почему именно она? |
-|------------|------------|-------------------|
-| **PostgreSQL** | Пользователи, фильмы, оценки | ACID, целостность данных, сложные запросы с JOIN |
-| **MongoDB** | Логи действий, события | Гибкая схема, быстрое хранение JSON-документов |
-| **Redis** | Кэш, сессии, счётчики | In-memory, скорость, TTL для временных данных |
-| **Qdrant** | Векторные эмбеддинги фильмов | Поиск по семантическому сходству |
-| **Neo4j** | Связи актёр-фильм-режиссёр | Графовые запросы, обход связей за O(1) |
+## 📋 О проекте
 
-## 🚀 Быстрый старт
+**CineMatch** — это учебный микросервисный проект, демонстрирующий современные **архитектурные паттерны** и **полиглотную архитектуру** баз данных. Проект разработан в рамках курса по архитектуре ПО.
 
-### Требования
-- Python 3.9+
-- Docker и Docker Compose
-- Git
+### 🏗️ Ключевые архитектурные решения
 
-### Установка и запуск
+| Паттерн | Реализация |
+|---------|------------|
+| **Микросервисная архитектура** | 5 независимых сервисов, каждый со своей БД |
+| **Domain-Driven Design (DDD)** | Чёткое выделение Entities, Value Objects, Aggregates |
+| **CQRS** | Разделение команд и запросов (в процессе) |
+| **Event-Driven Architecture** | RabbitMQ для асинхронной коммуникации |
+| **Clean Architecture** | Разделение на domain, application, infrastructure слои |
 
-```bash
+## 🗄️ Полиглотная архитектура баз данных
+
+| Сервис | База данных | Назначение | Паттерн |
+|--------|-------------|------------|---------|
+| **movies-service** | PostgreSQL + Neo4j + Redis | Фильмы, граф связей, кэш | Repository + Identity Map |
+| **auth-service** | PostgreSQL | Пользователи, аутентификация | Repository + Unit of Work |
+| **ratings-service** | PostgreSQL + Redis | Оценки, рейтинги | CQRS + Event Sourcing |
+| **recommendations-service** | Qdrant + Redis | Векторные рекомендации | Стратегия + Спецификация |
+| **events-service** | MongoDB | Логи действий, аналитика | Event Sourcing |
+
+## 🏗️ Архитектура проекта
+
+┌─────────────────────────────────────────────────────────────────┐
+│ API Gateway │
+│ (единая точка входа) │
+└─────────────────────────────────────────────────────────────────┘
+│
+┌─────────────────────┼─────────────────────┐
+▼ ▼ ▼
+┌───────────────┐ ┌───────────────┐ ┌───────────────┐
+│ movies-service │ │ ratings-service│ │ auth-service │
+│ (порт 5002) │ │ (порт 5003) │ │ (порт 5001) │
+└───────────────┘ └───────────────┘ └───────────────┘
+│ │ │
+▼ ▼ ▼
+┌───────────────┐ ┌───────────────┐ ┌───────────────┐
+│ recommendations│ │ events-service │ │ RabbitMQ │
+│ (порт 5004) │ │ (порт 5005) │ │ (порт 5672) │
+└───────────────┘ └───────────────┘ └───────────────┘
+
+text
+
+## 🔄 Event-Driven Architecture (RabbitMQ)
+
+```mermaid
+graph LR
+    A[Movies Service] -->|movie.created| B((RabbitMQ))
+    A -->|movie.rated| B
+    C[Ratings Service] -->|rating.changed| B
+    B -->|movie.created| D[Recommendations Service]
+    B -->|movie.rated| D
+    B -->|rating.changed| E[Events Service]
+    B -->|user.registered| F[Auth Service]
+📊 Топики и очереди
+Exchange	Routing Key	Подписчики	Событие
+cinematch.movies	movie.created	recommendations, events	Новый фильм
+cinematch.movies	movie.rated	recommendations, events	Оценка фильма
+cinematch.movies	movie.viewed	events	Просмотр
+cinematch.ratings	rating.changed	movies, events	Изменение рейтинга
+cinematch.auth	user.registered	events	Новый пользователь
+🏛️ DDD (Domain-Driven Design) в каждом сервисе
+text
+services/movies/
+├── src/
+│   ├── domain/                      # Ядро предметной области
+│   │   ├── entities/                 # Movie, User (с идентификаторами)
+│   │   ├── value_objects/            # MovieTitle, Year, Rating (immutable)
+│   │   ├── aggregates/               # MovieAggregate (корень агрегата)
+│   │   ├── events/                   # MovieCreated, MovieRated
+│   │   └── repositories/             # Интерфейсы репозиториев
+│   ├── application/                  # Сценарии использования
+│   │   ├── commands/                  # CreateMovieCommand
+│   │   ├── queries/                    # GetMovieQuery
+│   │   └── use_cases/                  # RecommendSimilarMovies
+│   ├── infrastructure/                # Технические детали
+│   │   ├── repositories/               # Реализации репозиториев
+│   │   └── message_bus/                # RabbitMQ адаптеры
+│   └── interfaces/                    # API слой
+│       └── http/                        # Flask routes
+🚀 Быстрый старт
+Требования
+Python 3.9+
+
+Docker и Docker Compose
+
+Git
+
+Установка и запуск
+bash
 # 1. Клонируем репозиторий
 git clone https://github.com/Evgeniy3252834/cinema.git
 cd cinema
@@ -36,73 +116,133 @@ pip install -r requirements.txt
 cp .env.example .env
 # Отредактируйте .env под свои параметры
 
-# 5. Запускаем все базы данных одной командой
+# 5. Запускаем все сервисы одной командой
 docker-compose up -d
 
-# 6. Инициализируем базу данных (таблицы и тестовые данные)
+# 6. Инициализируем базы данных
 docker exec -it cinematch-postgres psql -U postgres -d cinematch -f init.sql
 
-# 7. Запускаем API
-python app.py
-
-API будет доступно по адресу: http://localhost:5000
-
+# 7. Запускаем микросервисы (в отдельных терминалах)
+python services/movies/app.py      # порт 5002
+python services/auth/app.py        # порт 5001
+python services/ratings/app.py     # порт 5003
+python services/recommendations/app.py  # порт 5004
+python services/events/app.py      # порт 5005
 📡 API Endpoints
-Метод	Endpoint	Описание
-GET	/	Информация о проекте
-GET	/health	Проверка статуса всех БД
-GET	/movies	Список всех фильмов (с кэшированием в Redis)
-GET	/movies/<id>	Детальная информация о фильме
-GET	/movies/top	Топ-5 фильмов по оценкам
-GET	/rate/<user_id>/<movie_id>/<rating>	Поставить оценку фильму
+Movies Service (порт 5002)
+Метод	Endpoint	Описание	Событие
+GET	/api/movies/	Все фильмы	-
+GET	/api/movies/<id>	Детали фильма	movie.viewed
+POST	/api/movies/	Создать фильм	movie.created
+GET	/api/movies/<id>/actors	Актёры фильма	-
+GET	/api/movies/actors/<name>/movies	Фильмы актёра	-
+GET	/api/movies/top-views	Топ по просмотрам	-
+Другие сервисы (будут добавлены)
 🧪 Примеры запросов
 bash
 # Получить все фильмы
-curl http://localhost:5000/movies
+curl http://localhost:5002/api/movies/
 
-# Поставить оценку
-curl http://localhost:5000/rate/1/5/10
+# Создать новый фильм (публикует событие movie.created)
+curl -X POST http://localhost:5002/api/movies/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Inception",
+    "year": 2010,
+    "director": "Christopher Nolan",
+    "actors": ["Leonardo DiCaprio", "Joseph Gordon-Levitt"]
+  }'
 
-# Проверить здоровье сервиса
-curl http://localhost:5000/health
+# Получить актёров фильма
+curl http://localhost:5002/api/movies/1/actors
+
+# Проверить RabbitMQ веб-интерфейс
+# http://localhost:15672 (admin/admin)
 📦 Структура проекта
 text
 cinema/
-├── app.py                 # Основное Flask приложение
-├── requirements.txt       # Зависимости Python
-├── docker-compose.yml     # Запуск всех БД одной командой
-├── init.sql               # SQL для инициализации PostgreSQL
-├── .env.example           # Шаблон переменных окружения
-├── .gitignore             # Игнорируемые файлы
-├── README.md              # Документация
-├── scripts/               # Вспомогательные скрипты
-│   └── check_connections.py
-├── docs/                  # Документация (пусто)
-└── services/              # Микросервисы (пусто)
+├── services/                          # Микросервисы
+│   ├── movies/                         # Сервис фильмов
+│   │   ├── src/
+│   │   │   ├── domain/                   # DDD слой
+│   │   │   ├── application/               # Use cases
+│   │   │   ├── infrastructure/            # Репозитории, RabbitMQ
+│   │   │   └── interfaces/                # HTTP API
+│   │   ├── app.py
+│   │   ├── requirements.txt
+│   │   └── Dockerfile
+│   ├── auth/                           # Сервис авторизации
+│   ├── ratings/                         # Сервис оценок
+│   ├── recommendations/                  # Сервис рекомендаций
+│   └── events/                          # Сервис событий
+├── api-gateway/                        # API Gateway
+├── docs/                                # Документация
+│   └── architecture/                      # Архитектурные диаграммы
+├── scripts/                             # Вспомогательные скрипты
+├── docker-compose.yml                   # Запуск всех БД и RabbitMQ
+├── .env.example                          # Пример переменных
+├── .gitignore
+└── README.md
+🎯 Реализованные архитектурные паттерны
+✅ Domain-Driven Design (DDD)
+Entities: Movie, User (с идентификаторами)
+
+Value Objects: MovieTitle, Year, Rating (immutable)
+
+Aggregates: MovieAggregate (корень агрегата)
+
+Domain Events: MovieCreated, MovieRated
+
+Repositories: Интерфейсы в domain, реализация в infrastructure
+
+✅ Event-Driven Architecture
+Message Broker: RabbitMQ
+
+Event Bus: Абстракция над RabbitMQ
+
+Integration Events: Для межсервисного взаимодействия
+
+Publishers/Consumers: Отправка и обработка событий
+
+✅ Clean Architecture Layers
+Domain Layer: Бизнес-логика, entities, value objects
+
+Application Layer: Use cases, commands, queries
+
+Infrastructure Layer: Репозитории, message bus
+
+Interface Layer: HTTP endpoints (Flask)
+
+✅ Репозитории и паттерны работы с БД
+Repository Pattern: Абстракция доступа к данным
+
+Identity Map: Кэширование объектов в памяти
+
+Unit of Work: Транзакции (в процессе)
+
 🔄 Планы по развитию
-Интеграция с Qdrant (векторные рекомендации)
+Базовая структура микросервисов
 
-Интеграция с Neo4j (графовые запросы)
+Domain-Driven Design (DDD)
 
-Добавление RabbitMQ для фоновых задач
+RabbitMQ и Event Bus
 
-JWT авторизация
+Реализация CQRS
 
-Web-интерфейс на React/Vue
+Unit of Work паттерн
 
-🛠️ Технологии
-Backend: Python, Flask
+Dead Letter Queue для ошибок
 
-Databases: PostgreSQL, MongoDB, Redis, Qdrant, Neo4j
+Метрики и мониторинг (Prometheus + Grafana)
 
-DevOps: Docker, Docker Compose
+API Gateway с авторизацией
 
-Version Control: Git, GitHub
+Тесты (unit, integration)
 
 📄 Лицензия
 MIT License — свободно используйте для обучения и разработки.
 
 👨‍💻 Автор
-Овчинников Евгений,Михайлов Сергей — учебный проект для демонстрации полиглотной архитектуры баз данных
+Овчинников Евгений, Михайлов Сергей — учебный проект по курсу "Архитектура ПО"
 
 ⭐ Если проект полезен, поставьте звезду на GitHub!
