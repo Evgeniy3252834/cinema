@@ -67,7 +67,7 @@ services/movies/
 │   │   └── message_bus/                # RabbitMQ адаптеры
 │   └── interfaces/                    # API слой
 │       └── http/                        # Flask routes
-## 🚀 Быстрый старт
+# 🚀 Быстрый старт
 Требования:
 Python 3.9+
 Docker и Docker Compose
@@ -75,36 +75,36 @@ Git
 
 Установка и запуск
 bash
-# 1. Клонируем репозиторий
+## 1. Клонируем репозиторий
 git clone https://github.com/Evgeniy3252834/cinema.git
 cd cinema
 
-# 2. Создаём виртуальное окружение
+## 2. Создаём виртуальное окружение
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# или
+## или
 venv\Scripts\activate     # Windows
 
-# 3. Устанавливаем зависимости
+## 3. Устанавливаем зависимости
 pip install -r requirements.txt
 
-# 4. Создаём файл с переменными окружения
+## 4. Создаём файл с переменными окружения
 cp .env.example .env
-# Отредактируйте .env под свои параметры
+## Отредактируйте .env под свои параметры
 
-# 5. Запускаем все сервисы одной командой
+## 5. Запускаем все сервисы одной командой
 docker-compose up -d
 
-# 6. Инициализируем базы данных
+## 6. Инициализируем базы данных
 docker exec -it cinematch-postgres psql -U postgres -d cinematch -f init.sql
 
-# 7. Запускаем микросервисы (в отдельных терминалах)
+## 7. Запускаем микросервисы (в отдельных терминалах)
 python services/movies/app.py      # порт 5002
 python services/auth/app.py        # порт 5001
 python services/ratings/app.py     # порт 5003
 python services/recommendations/app.py  # порт 5004
 python services/events/app.py      # порт 5005
-## 📡 API Endpoints
+# 📡 API Endpoints
 Movies Service (порт 5002)
 Метод	Endpoint	Описание	Событие
 GET	/api/movies/	Все фильмы	-
@@ -114,12 +114,11 @@ GET	/api/movies/<id>/actors	Актёры фильма	-
 GET	/api/movies/actors/<name>/movies	Фильмы актёра	-
 GET	/api/movies/top-views	Топ по просмотрам	-
 Другие сервисы (будут добавлены)
-## 🧪 Примеры запросов
-bash
-# Получить все фильмы
+# 🧪 Примеры запросов
+## Получить все фильмы
 curl http://localhost:5002/api/movies/
 
-# Создать новый фильм (публикует событие movie.created)
+## Создать новый фильм (публикует событие movie.created)
 curl -X POST http://localhost:5002/api/movies/ \
   -H "Content-Type: application/json" \
   -d '{
@@ -129,40 +128,16 @@ curl -X POST http://localhost:5002/api/movies/ \
     "actors": ["Leonardo DiCaprio", "Joseph Gordon-Levitt"]
   }'
 
-# Получить актёров фильма
+## Получить актёров фильма
 curl http://localhost:5002/api/movies/1/actors
 
-# Проверить RabbitMQ веб-интерфейс
-# http://localhost:15672 (admin/admin)
-## 📦 Структура проекта
-cinema/
-├── services/                          # Микросервисы
-│   ├── movies/                         # Сервис фильмов
-│   │   ├── src/
-│   │   │   ├── domain/                   # DDD слой
-│   │   │   ├── application/               # Use cases
-│   │   │   ├── infrastructure/            # Репозитории, RabbitMQ
-│   │   │   └── interfaces/                # HTTP API
-│   │   ├── app.py
-│   │   ├── requirements.txt
-│   │   └── Dockerfile
-│   ├── auth/                           # Сервис авторизации
-│   ├── ratings/                         # Сервис оценок
-│   ├── recommendations/                  # Сервис рекомендаций
-│   └── events/                          # Сервис событий
-├── api-gateway/                        # API Gateway
-├── docs/                                # Документация
-│   └── architecture/                      # Архитектурные диаграммы
-├── scripts/                             # Вспомогательные скрипты
-├── docker-compose.yml                   # Запуск всех БД и RabbitMQ
-├── .env.example                          # Пример переменных
-├── .gitignore
-└── README.md
+## Проверить RabbitMQ веб-интерфейс
+http://localhost:15672 (admin/admin)
 
-## 📄 Лицензия
+# 📄 Лицензия
 MIT License — свободно используйте для обучения и разработки.
 
-## 👨‍💻 Авторы
+# 👨‍💻 Авторы
 Овчинников Евгений, Михайлов Сергей — учебный проект по курсу "Архитектура ПО"
 
 ⭐ Если проект полезен, поставьте звезду на GitHub!
