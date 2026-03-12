@@ -30,28 +30,6 @@
 | **recommendations-service** | Qdrant + Redis | Векторные рекомендации | Стратегия + Спецификация |
 | **events-service** | MongoDB | Логи действий, аналитика | Event Sourcing |
 
-## 🏗️ Архитектура проекта
-
-┌─────────────────────────────────────────────────────────────────┐
-│ API Gateway │
-│ (единая точка входа) │
-└─────────────────────────────────────────────────────────────────┘
-│
-┌─────────────────────┼─────────────────────┐
-▼ ▼ ▼
-┌───────────────┐ ┌───────────────┐ ┌───────────────┐
-│ movies-service │ │ ratings-service│ │ auth-service │
-│ (порт 5002) │ │ (порт 5003) │ │ (порт 5001) │
-└───────────────┘ └───────────────┘ └───────────────┘
-│ │ │
-▼ ▼ ▼
-┌───────────────┐ ┌───────────────┐ ┌───────────────┐
-│ recommendations│ │ events-service │ │ RabbitMQ │
-│ (порт 5004) │ │ (порт 5005) │ │ (порт 5672) │
-└───────────────┘ └───────────────┘ └───────────────┘
-
-text
-
 ## 🔄 Event-Driven Architecture (RabbitMQ)
 
 ```mermaid
@@ -183,61 +161,6 @@ cinema/
 ├── .env.example                          # Пример переменных
 ├── .gitignore
 └── README.md
-🎯 Реализованные архитектурные паттерны
-✅ Domain-Driven Design (DDD)
-Entities: Movie, User (с идентификаторами)
-
-Value Objects: MovieTitle, Year, Rating (immutable)
-
-Aggregates: MovieAggregate (корень агрегата)
-
-Domain Events: MovieCreated, MovieRated
-
-Repositories: Интерфейсы в domain, реализация в infrastructure
-
-✅ Event-Driven Architecture
-Message Broker: RabbitMQ
-
-Event Bus: Абстракция над RabbitMQ
-
-Integration Events: Для межсервисного взаимодействия
-
-Publishers/Consumers: Отправка и обработка событий
-
-✅ Clean Architecture Layers
-Domain Layer: Бизнес-логика, entities, value objects
-
-Application Layer: Use cases, commands, queries
-
-Infrastructure Layer: Репозитории, message bus
-
-Interface Layer: HTTP endpoints (Flask)
-
-✅ Репозитории и паттерны работы с БД
-Repository Pattern: Абстракция доступа к данным
-
-Identity Map: Кэширование объектов в памяти
-
-Unit of Work: Транзакции (в процессе)
-
-🔄 Планы по развитию
-Базовая структура микросервисов
-
-Domain-Driven Design (DDD)
-
-RabbitMQ и Event Bus
-
-Реализация CQRS
-
-Unit of Work паттерн
-
-Dead Letter Queue для ошибок
-
-Метрики и мониторинг (Prometheus + Grafana)
-
-API Gateway с авторизацией
-
-Тесты (unit, integration)
 
 📄 Лицензия
 MIT License — свободно используйте для обучения и разработки.
