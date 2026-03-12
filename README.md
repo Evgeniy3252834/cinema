@@ -41,6 +41,7 @@ graph LR
     B -->|movie.rated| D
     B -->|rating.changed| E[Events Service]
     B -->|user.registered| F[Auth Service]
+```
 📊 Топики и очереди
 Exchange	Routing Key	Подписчики	Событие
 cinematch.movies	movie.created	recommendations, events	Новый фильм
