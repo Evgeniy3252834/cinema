@@ -1,11 +1,21 @@
-# Секреты и пароли
-.env
-*.env
-
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .venv/
 venv/
-__pycache__/
-*.pyc
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env
+.env
+*.env
+
+# Logs
+*.log
