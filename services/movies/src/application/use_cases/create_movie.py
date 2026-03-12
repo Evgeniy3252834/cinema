@@ -3,15 +3,17 @@ from typing import List, Optional
 from ...domain.entities.movie import Movie
 from ...domain.value_objects.movie_title import MovieTitle
 from ...domain.value_objects.year import Year
-from ...domain.events.movie_events import MovieCreated
 from ...domain.repositories.movie_repository import MovieRepository
+from ...infrastructure.message_bus.movie_event_publisher import MovieEventPublisher
 
 class CreateMovieUseCase:
     """Сценарий: пользователь создаёт новый фильм"""
     
-    def __init__(self, movie_repo: MovieRepository, event_bus=None):
+    def __init__(self, 
+                 movie_repo: MovieRepository, 
+                 event_publisher: Optional[MovieEventPublisher] = None):
         self.movie_repo = movie_repo
-        self.event_bus = event_bus  # для отправки событий
+        self.event_publisher = event_publisher
     
     def execute(self, 
                 title: str, 
@@ -31,9 +33,6 @@ class CreateMovieUseCase:
             
         Returns:
             ID созданного фильма
-            
-        Raises:
-            ValueError: если данные невалидны
         """
         # 1. Создаём Value Objects (валидация на входе)
         movie_title = MovieTitle(title)
@@ -56,13 +55,14 @@ class CreateMovieUseCase:
         # 4. Сохраняем через репозиторий
         movie_id = self.movie_repo.save(movie)
         
-        # 5. Отправляем событие
-        if self.event_bus:
-            self.event_bus.publish(MovieCreated(
+        # 5. Публикуем событие (асинхронно)
+        if self.event_publisher:
+            self.event_publisher.publish_movie_created(
                 movie_id=movie_id,
                 title=title,
                 year=year,
-                director=director
-            ))
+                director=director,
+                actors=actors or []
+            )
         
         return movie_id

@@ -64,6 +64,26 @@ services:
     restart: unless-stopped
     networks:
       - cinematch-network
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: cinematch-rabbitmq
+    hostname: my-rabbit
+    ports:
+      - "5672:5672"      # AMQP порт для приложений
+      - "15672:15672"    # Management UI порт
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - cinematch-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   postgres_data:
@@ -71,6 +91,7 @@ volumes:
   redis_data:
   qdrant_data:
   neo4j_data:
+  rabbitmq_data:
 
 networks:
   cinematch-network:
